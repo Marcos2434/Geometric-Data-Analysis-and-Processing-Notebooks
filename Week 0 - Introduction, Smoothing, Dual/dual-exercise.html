@@ -1,0 +1,348 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html><head></head><body>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<main>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput">
+<h1>Laplacian Smoothing and Mesh Dual<a rel="noopener" class="anchor-link" href="#Laplacian-Smoothing-and-Mesh-Dual">&#182;</a></h1><p>This notebook contains an exercise where you</p>
+<ul>
+<li>smooth a mesh by replacing each vertex with the average of its neighbors.</li>
+<li>compute the volume of a tetrahedral mesh</li>
+<li>compute the dual of a mesh by converting each vertex to a face such that the vertices of the new face correspond to the faces of the old mesh.</li>
+</ul>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&#160;[&#160;]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">pygel3d</span> <span class="kn">import</span> <span class="n">hmesh</span><span class="p">,</span> <span class="n">jupyter_display</span> <span class="k">as</span> <span class="n">jd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">zeros</span>
+<span class="kn">from</span> <span class="nn">numpy.linalg</span> <span class="kn">import</span> <span class="n">det</span>
+<span class="n">jd</span><span class="o">.</span><span class="n">set_export_mode</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">mesh_stats</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;# faces : &quot;</span><span class="p">,</span> <span class="n">m</span><span class="o">.</span><span class="n">no_allocated_faces</span><span class="p">(),</span> <span class="s2">&quot; # vertices : &quot;</span><span class="p">,</span> <span class="n">m</span><span class="o">.</span><span class="n">no_allocated_vertices</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output">
+
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput">
+<h3>Problem 1: Insert code to complete the smoothing function<a rel="noopener" class="anchor-link" href="#Problem-1:-Insert-code-to-complete-the-smoothing-function">&#182;</a></h3>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&#160;[&#160;]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">smooth</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="n">pos</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">positions</span><span class="p">()</span>
+    <span class="n">new_pos</span> <span class="o">=</span> <span class="n">zeros</span><span class="p">(</span><span class="n">pos</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="k">for</span> <span class="nb">iter</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">max_iter</span><span class="p">):</span>
+        <span class="c1"># Insert code ------&gt;</span>
+        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">m</span><span class="o">.</span><span class="n">vertices</span><span class="p">():</span>
+            <span class="nb">sum</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">nv</span> <span class="ow">in</span> <span class="n">m</span><span class="o">.</span><span class="n">circulate_vertex</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+                <span class="nb">sum</span> <span class="o">+=</span> <span class="n">pos</span><span class="p">[</span><span class="n">nv</span><span class="p">]</span>
+            <span class="n">avg</span> <span class="o">=</span> <span class="nb">sum</span> <span class="o">/</span> <span class="n">m</span><span class="o">.</span><span class="n">valency</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+            <span class="n">new_pos</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="o">=</span> <span class="n">avg</span>
+        <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pos</span><span class="p">)):</span>
+            <span class="n">pos</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_pos</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+        <span class="c1"># &lt;------------------</span>
+    
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput">
+<h3>Problem 2: Insert code to compute the volume of a triangle mesh<a rel="noopener" class="anchor-link" href="#Problem-2:-Insert-code-to-compute-the-volume-of-a-triangle-mesh">&#182;</a></h3>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&#160;[&#160;]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">calculate_volume</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
+    <span class="n">pos</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">positions</span><span class="p">()</span>
+    <span class="n">vol</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="c1"># Insert code ------&gt;</span>
+    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">m</span><span class="o">.</span><span class="n">faces</span><span class="p">():</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">circulate_face</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="n">vol</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">pos</span><span class="p">[</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">pos</span><span class="p">[</span><span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span> <span class="n">pos</span><span class="p">[</span><span class="n">v</span><span class="p">[</span><span class="mi">2</span><span class="p">]]))</span> <span class="o">/</span> <span class="mi">6</span>
+    <span class="c1"># &lt;------------------</span>
+    <span class="k">return</span> <span class="n">vol</span>            
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput">
+<h3>Problem 3: Insert code to complete the dual function<a rel="noopener" class="anchor-link" href="#Problem-3:-Insert-code-to-complete-the-dual-function">&#182;</a></h3>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&#160;[&#160;]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">dual</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
+    <span class="n">m2</span> <span class="o">=</span> <span class="n">hmesh</span><span class="o">.</span><span class="n">Manifold</span><span class="p">()</span>
+    <span class="n">pos</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">positions</span><span class="p">()</span>
+    <span class="c1"># Insert code ------&gt;</span>
+    <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">m</span><span class="o">.</span><span class="n">vertices</span><span class="p">():</span>
+        <span class="n">new_face</span> <span class="o">=</span> <span class="n">zeros</span><span class="p">((</span><span class="n">m</span><span class="o">.</span><span class="n">valency</span><span class="p">(</span><span class="n">v</span><span class="p">),</span> <span class="mi">3</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">f</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">circulate_vertex</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;f&#39;</span><span class="p">)):</span>
+            <span class="n">points</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">circulate_face</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+            <span class="n">new_face</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">pos</span><span class="p">[</span><span class="n">points</span><span class="p">])</span> <span class="o">/</span> <span class="mi">3</span>
+        <span class="n">m2</span><span class="o">.</span><span class="n">add_face</span><span class="p">(</span><span class="n">new_face</span><span class="p">)</span>
+    <span class="c1"># &lt;------------------</span>
+    <span class="k">return</span> <span class="n">m2</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput">
+<h3>Show original mesh<a rel="noopener" class="anchor-link" href="#Show-original-mesh">&#182;</a></h3><p>If you don&#39;t see anything it is probably a problem with the path to <code>data/bunnygtest.obj</code>. The path should be relative to the current working directory: probably this is the directory that Jupyter Notebook shows when it starts.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&#160;[&#160;]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-ipython3"><pre><span></span><span class="n">m</span> <span class="o">=</span> <span class="n">hmesh</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;bunnygtest.obj&quot;</span><span class="p">)</span>
+<span class="n">mesh_stats</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Volume: &quot;</span><span class="p">,</span> <span class="n">calculate_volume</span><span class="p">(</span><span class="n">m</span><span class="p">))</span>
+<span class="n">jd</span><span class="o">.</span><span class="n">display</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output">
+<pre># faces :  6966  # vertices :  3485
+Volume:  0.0007541261586712999
+</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output">
+<div> <div class="plotly-graph-div" style="height:800px;width:850px;"></div>  </div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput">
+<h3>Show the smoothed mesh<a rel="noopener" class="anchor-link" href="#Show-the-smoothed-mesh">&#182;</a></h3>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&#160;[&#160;]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-ipython3"><pre><span></span><span class="n">m_s</span> <span class="o">=</span> <span class="n">hmesh</span><span class="o">.</span><span class="n">Manifold</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+<span class="n">smooth</span><span class="p">(</span><span class="n">m_s</span><span class="p">,</span><span class="mi">50</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Volume: &quot;</span><span class="p">,</span> <span class="n">calculate_volume</span><span class="p">(</span><span class="n">m</span><span class="p">))</span>
+<span class="n">jd</span><span class="o">.</span><span class="n">display</span><span class="p">(</span><span class="n">m_s</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output">
+<pre>Volume:  0.0007541261586712999
+</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output">
+<div> <div class="plotly-graph-div" style="height:800px;width:850px;"></div>  </div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput">
+<h3>Show the dual mesh<a rel="noopener" class="anchor-link" href="#Show-the-dual-mesh">&#182;</a></h3>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&#160;[&#160;]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-ipython3"><pre><span></span><span class="n">mesh_stats</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+<span class="n">m_d</span> <span class="o">=</span> <span class="n">dual</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+<span class="n">mesh_stats</span><span class="p">(</span><span class="n">m_d</span><span class="p">)</span>
+<span class="n">jd</span><span class="o">.</span><span class="n">display</span><span class="p">(</span><span class="n">m_d</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output">
+<pre># faces :  6966  # vertices :  3485
+# faces :  3485  # vertices :  20898
+</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output">
+<div> <div class="plotly-graph-div" style="height:800px;width:850px;"></div>  </div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput">
+<p>When everything works, export this to an HTML file and submit that!</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+
+
+<script type="module" src="https://s.brightspace.com/lib/bsi/20.24.1-233/unbundled/mathjax.js"></script><script type="text/javascript">document.addEventListener('DOMContentLoaded', function() {
+					if (document.querySelector('math') || /\$\$|\\\(|\\\[|\\begin{|\\ref{|\\eqref{/.test(document.body.innerHTML)) {
+						document.querySelectorAll('mspace[linebreak="newline"]').forEach(elm => {
+							elm.setAttribute('style', 'display: block; height: 0.5rem;');
+						});
+
+						window.D2L.MathJax.loadMathJax({
+							'outputScale': 1.5,
+							'renderLatex': true
+						});
+					}
+				});</script><script type="module" src="https://s.brightspace.com/lib/bsi/20.24.1-233/unbundled/prism.js"></script><script type="text/javascript">document.addEventListener('DOMContentLoaded', function() {
+					document.querySelectorAll('.d2l-code').forEach(code => {
+						window.D2L.Prism.formatCodeElement(code);
+					});
+				});</script></body></html>
